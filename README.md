@@ -55,3 +55,6 @@ react-native link
     if(errorCount > 30) sharedStorage = AsyncStorage;
   }
   ```
+
+# Roadmap
+- Add option to enable storing data as encrypted string
