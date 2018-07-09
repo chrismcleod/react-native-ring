@@ -1,0 +1,25 @@
+{
+  "name": "react-native-ring",
+  "version": "0.0.1",
+  "description": "Share data among react-native apps.  Works for iOS and Android.",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "repository": "https://github.com/chrismcleod/react-native-ring",
+  "author": "Chris McLeod <chris@warebots.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "immutable": "^4.0.0-rc.9",
+    "lodash": "^4.17.10",
+    "react-native": "^0.55.4",
+    "tslib": "^1.9.3"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.110",
+    "@types/react-native": "^0.55.27",
+    "tslint": "^5.10.0",
+    "tslint-config-airbnb": "^5.9.2",
+    "tslint-react": "^3.6.0",
+    "typescript": "^2.9.2"
+  }
+}

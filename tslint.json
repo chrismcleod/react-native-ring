@@ -1,0 +1,94 @@
+{
+  "extends": [
+    "tslint:latest",
+    "tslint-config-airbnb",
+    "tslint-react"
+  ],
+  "rules": {
+    "align": false,
+    "array-bracket-spacing": true,
+    "function-name": [
+      true,
+      {
+        "method-regex": "^[a-zA-Z][\\w\\d]+$",
+        "private-method-regex": "^[a-zA-Z][\\w\\d]+$",
+        "static-method-regex": "^[a-zA-Z][\\w\\d]+$"
+      }
+    ],
+    "import-name": false,
+    "interface-name": false,
+    "jsx-alignment": true,
+    "jsx-curly-spacing": [
+      true,
+      "always"
+    ],
+    "jsx-equals-spacing": [
+      true,
+      "never"
+    ],
+    "jsx-key": true,
+    "jsx-no-bind": true,
+    "jsx-no-lambda": true,
+    "jsx-no-multiline-js": false,
+    "jsx-no-string-ref": true,
+    "jsx-self-close": true,
+    "jsx-space-before-trailing-slash": true,
+    "jsx-wrap-multiline": true,
+    "no-empty-interface": false,
+    "no-implicit-dependencies": false,
+    "no-parameter-reassignment": false,
+    "no-submodule-imports": [
+      true,
+      "rxjs",
+      "recompose",
+      "react-native-vector-icons"
+    ],
+    "object-curly-spacing": true,
+    "object-literal-sort-keys": false,
+    "ordered-imports": [
+      true,
+      {
+        "import-sources-order": "lowercase-last",
+        "named-imports-order": "lowercase-last",
+        "grouped-imports": true
+      }
+    ],
+    "prefer-array-literal": false,
+    "quotemark": [
+      true,
+      "single",
+      "jsx-single"
+    ],
+    "react-this-binding-issue": true,
+    "ter-arrow-parens": false,
+    "ter-computed-property-spacing": [
+      true,
+      "always"
+    ],
+    "whitespace": {
+      "options": [
+        "check-branch",
+        "check-decl",
+        "check-module",
+        "check-operator",
+        "check-preblock",
+        "check-rest-spread",
+        "check-separator",
+        "check-type",
+        "check-type-operator",
+        "check-typecast"
+      ]
+    },
+    "max-line-length": {
+      "options": [
+        1000
+      ]
+    },
+    "variable-name": {
+      "options": [
+        "allow-leading-underscore",
+        "allow-pascal-case"
+      ]
+    }
+  }
+}

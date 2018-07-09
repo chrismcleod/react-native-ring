@@ -1,0 +1,16 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.warebots.reactnative.ring">
+
+  <permission
+    android:name="${WBRingPermission}"
+    android:protectionLevel="signature" />
+
+  <uses-permission android:name="${WBRingPermission}" />
+
+  <application>
+    <receiver
+      android:name=".Ring"
+      android:exported="true"
+      android:permission="${WBRingPermission}" />
+  </application>
+</manifest>
