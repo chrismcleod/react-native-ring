@@ -36,11 +36,15 @@ class Leader(context: Context, appGroup: Group) : Node(context, appGroup) {
         .map { results ->
           val mutableResults = results.toMutableList()
           mutableResults.add(bundle)
+          if(mutableResults.find { !it.getBoolean("success") } != null) {
+            throw Exception("Node failed to respond to leader initialization query")
+          }
           mutableResults.filter { it.containsKey("version") }.maxBy { it.getInt("version") }!!
         }.take(1).doOnNext {
           val newVersion = it.getInt("version")
           val newData = it.getString("data")
           saveData(newVersion, newData)
+          leaderInitialized()
           client.commit(appGroup.followerAppNames, newVersion, newData).subscribe()
         }
     } else {
@@ -49,11 +53,29 @@ class Leader(context: Context, appGroup: Group) : Node(context, appGroup) {
   }
 
   override fun write(bundle: Bundle): Observable<Bundle> {
-    val newVersion = bundle.getInt("version")
-    val newData = bundle.getString("data")
-    saveData(newVersion + 1, newData)
-    client.commit(appGroup.followerAppNames, newVersion + 1, newData).subscribe()
-    return Observable.just(bundleOf("success" to true, "version" to newVersion + 1, "data" to newData))
+    return if (!hasData()) {
+      Observable.just(bundleOf("success" to false))
+    } else {
+      val newVersion = bundle.getInt("version")
+      if(locked && lockTimedOut) {
+        unlock()
+        client.commit(appGroup.followerAppNames, currentVersion(), currentData()).subscribe()
+        Observable.just(bundleOf("success" to false))
+      } else if(locked) {
+        return Observable.just(bundleOf("success" to false))
+      } else if(newVersion != currentVersion()) {
+        client.commit(appGroup.followerAppNames, currentVersion(), currentData()).subscribe()
+        Observable.just(bundleOf("success" to false))
+      } else {
+        lock()
+        val newData = bundle.getString("data")
+        saveData(newVersion + 1, newData)
+        client.commit(appGroup.followerAppNames, newVersion + 1, newData).subscribe()
+        Observable.just(bundleOf("success" to true, "version" to newVersion + 1, "data" to newData)).doOnComplete {
+          unlock()
+        }
+      }
+    }
   }
 
 }

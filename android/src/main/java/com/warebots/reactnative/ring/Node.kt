@@ -12,32 +12,21 @@ enum class NodeMethod { INITIALIZE, WRITE, READ, ELECT }
 abstract class Node(protected val context: Context, protected val appGroup: Group) {
 
   init {
-    if(!appGroup.appNames.contains(context.packageName)) throw Exception("Ring node initialized from node outside of group.  Ensure the Android package name for this application begins with domain value passed in during setup.")
+    if (!appGroup.appNames.contains(context.packageName)) throw Exception("Ring node initialized from node outside of group.  Ensure the Android package name for this application begins with domain value passed in during setup.")
   }
 
   protected val client = RingClient(context, appGroup)
 
   companion object {
     fun getInstance(context: Context, appGroup: Group): Node {
-      if(appGroup.leaderAppName == context.packageName) return Leader(context, appGroup)
+      if (appGroup.leaderAppName == context.packageName) return Leader(context, appGroup)
       return Follower(context, appGroup)
     }
   }
 
-  fun commit(bundle: Bundle): Observable<Bundle> {
-    val newVersion = bundle.getInt("version")
-    val newData = bundle.getString("data")
-    saveData(newVersion, newData)
-    return Observable.just(bundleOf(
-      "success" to true,
-      "version" to newVersion,
-      "data" to newData
-    ))
-  }
-
   fun invokeMethod(payload: Bundle): Observable<Bundle> {
     val method = payload.getString("method")
-    return when(method) {
+    return when (method) {
       "initialize" -> initialize()
       "read" -> read()
       "commit" -> commit(payload)
@@ -57,7 +46,7 @@ abstract class Node(protected val context: Context, protected val appGroup: Grou
       putInt("version", version)
       apply()
     }
-    if(!hasData()) {
+    if (!hasData()) {
       mDataFile.parentFile.mkdirs()
       mDataFile.createNewFile()
     }
@@ -82,9 +71,45 @@ abstract class Node(protected val context: Context, protected val appGroup: Grou
 
   protected fun leaderInitialized() {
     with(mPreferences.edit()) {
-      putBoolean("hasBeenLeader", false)
+      putBoolean("hasBeenLeader", true)
       apply()
     }
+  }
+
+  protected fun unlock() {
+    with(mPreferences.edit()) {
+      putLong("locked", 0)
+      apply()
+    }
+  }
+
+  protected fun lock() {
+    with(mPreferences.edit()) {
+      putLong("locked", System.currentTimeMillis())
+      apply()
+    }
+  }
+
+  protected val locked: Boolean
+    get() {
+      return mPreferences.getLong("locked", 0) > 0
+    }
+
+  protected val lockTimedOut: Boolean
+  get() {
+    return System.currentTimeMillis() - mPreferences.getLong("locked", 0) > 5000
+  }
+
+  private fun commit(bundle: Bundle): Observable<Bundle> {
+    resetLeaderHistory()
+    val newVersion = bundle.getInt("version")
+    val newData = bundle.getString("data")
+    saveData(newVersion, newData)
+    return Observable.just(bundleOf(
+      "success" to true,
+      "version" to newVersion,
+      "data" to newData
+    ))
   }
 
   private val mDataFile: File
