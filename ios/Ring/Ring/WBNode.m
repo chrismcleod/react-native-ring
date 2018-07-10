@@ -30,6 +30,7 @@
     self.dataUrl = [self.sharedUrl URLByAppendingPathComponent:@"data.json"];
     self.dataPath = [self.dataUrl path];
     self.defaults = [[NSUserDefaults alloc] initWithSuiteName:self.appGroupName];
+    self.operationQueue = [[NSOperationQueue alloc] init];
   }
   return self;
 }
@@ -39,22 +40,36 @@
 }
 
 - (void) readData:(void (^)(BOOL success, NSDictionary *output))completionBlock {
-  dispatch_async(self.queue, ^{
-    NSString *dataString = [[NSString alloc] initWithData:[NSData dataWithContentsOfFile:self.dataPath] encoding:NSUTF8StringEncoding];
-    int version = (int)[self.defaults integerForKey:@"com-warebots-reactnative-ring-version"];
-    NSDictionary *output = @{@"version": @(version), @"data":dataString};
-    completionBlock(true, output);
-  });
+  NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] init];
+  NSFileAccessIntent *readIntent = [NSFileAccessIntent readingIntentWithURL:self.dataUrl options:NSFileCoordinatorReadingWithoutChanges];
+  NSArray<NSFileAccessIntent *> *intents = @[readIntent];
+  [coordinator coordinateAccessWithIntents:intents queue:self.operationQueue byAccessor:^(NSError * _Nullable error) {
+    if(error == nil) {
+      NSString *dataPath = [[readIntent URL] path];
+      NSString *dataString = [[NSString alloc] initWithData:[NSData dataWithContentsOfFile:dataPath] encoding:NSUTF8StringEncoding];
+      int version = (int)[self.defaults integerForKey:@"com-warebots-reactnative-ring-version"];
+      NSDictionary *output = @{@"version": @(version), @"data":dataString};
+      completionBlock(true, output);
+    }
+  }];
 }
 
 - (void) writeData:(int)version data:(NSString *)dataString withCompletion:(void (^)(BOOL success, NSDictionary *output))completionBlock {
-  dispatch_async(self.queue, ^{
-    NSData *data = [dataString dataUsingEncoding:NSUTF8StringEncoding];
-    [data writeToFile:self.dataPath atomically:YES];
-    [self.defaults setInteger:version+1 forKey:@"com-warebots-reactnative-ring-version"];
-    NSDictionary *output = @{@"version": @(version + 1), @"data":dataString};
-    completionBlock(true, output);
-  });
+  NSFileCoordinator *coordinator = [[NSFileCoordinator alloc] init];
+  NSFileAccessIntent *writeIntent = [NSFileAccessIntent writingIntentWithURL:self.dataUrl options:NSFileCoordinatorWritingForReplacing];
+  NSArray<NSFileAccessIntent *> *intents = @[writeIntent];
+  [coordinator coordinateAccessWithIntents:intents queue:self.operationQueue byAccessor:^(NSError * _Nullable error) {
+    if(error == nil) {
+      NSString *writePath = [[writeIntent URL] path];
+      NSData *data = [dataString dataUsingEncoding:NSUTF8StringEncoding];
+      [data writeToFile:writePath atomically:YES];
+      [self.defaults setInteger:version+1 forKey:@"com-warebots-reactnative-ring-version"];
+      NSDictionary *output = @{@"version": @(version + 1), @"data":dataString};
+      completionBlock(true, output);
+    }
+  }];
+  
+  
 }
 
 - (BOOL) assertFilesExist {

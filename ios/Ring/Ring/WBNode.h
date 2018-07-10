@@ -25,4 +25,5 @@
 @property NSString *dataPath;
 @property NSUserDefaults *defaults;
 @property dispatch_queue_t queue;
+@property NSOperationQueue *operationQueue;
 @end
