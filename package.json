@@ -11,8 +11,10 @@
   "dependencies": {
     "immutable": "^4.0.0-rc.9",
     "lodash": "^4.17.10",
-    "react-native": "^0.55.4",
     "tslib": "^1.9.3"
+  },
+  "peerDependencies": {
+    "react-native": "^0.55.4"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.110",
