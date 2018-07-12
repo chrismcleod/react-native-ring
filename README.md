@@ -25,6 +25,8 @@ react-native link
 ```
 
 ### Required Manual Android Steps
+- Android is going to be requiring all apps to use API 26+ starting in August.  React Native has begun the work for this in 0.56.  This lib was tested using 0.56.  It can also work on previous versions with some minor changes to gradle files.
+- Ensure each app that should be a member of the shared data ring is signed with the same certificate
 - Ensure app package name has at least three parts (i.e. com.company.appname)
 - Add manifest placeholder for unique ring permission to android in app/build.gradle.
   This permission ensures no other compnents can send broadcasts to your app and receive
